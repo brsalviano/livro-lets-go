@@ -6,16 +6,24 @@ import (
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
+
+	//Adicionando a checagem se a rota não for exatamente /
+	//vamos mandar uma resposta NotFound 404
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+
 	w.Write([]byte("Snippetbox"))
 }
 
-// Novos handlers 
+// Novos handlers
 
 func showSnippet(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Mostra um snippet específico..."))
 }
 
-func createSnippet(w http.ResponseWriter, r * http.Request) {
+func createSnippet(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Cria um novo snippet..."))
 }
 
@@ -31,4 +39,3 @@ func main() {
 	err := http.ListenAndServe(":4000", mux)
 	log.Fatal(err)
 }
-
