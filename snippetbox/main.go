@@ -7,8 +7,6 @@ import (
 
 func home(w http.ResponseWriter, r *http.Request) {
 
-	//Adicionando a checagem se a rota não for exatamente /
-	//vamos mandar uma resposta NotFound 404
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
@@ -17,22 +15,27 @@ func home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Snippetbox"))
 }
 
-// Novos handlers
-
 func showSnippet(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Mostra um snippet específico..."))
 }
 
 func createSnippet(w http.ResponseWriter, r *http.Request) {
+	//Verificando se o método da requisição é POST
+	if r.Method != http.MethodPost {
+		//O status será 405 (Method Not Allowed)
+		w.WriteHeader(405)
+		//A tela vai mostrar a mensagem especificada abaixo
+		w.Write([]byte("Método não permitido"))
+		return
+	}
+
 	w.Write([]byte("Cria um novo snippet..."))
 }
 
 func main() {
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", home) //Lembrete: A rota termina com / então é catch-all
-
-	//Adicionando handlers no servemux
+	mux.HandleFunc("/", home)
 	mux.HandleFunc("/snippet", showSnippet)
 	mux.HandleFunc("/snippet/create", createSnippet)
 
