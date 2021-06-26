@@ -21,14 +21,10 @@ func showSnippet(w http.ResponseWriter, r *http.Request) {
 
 func createSnippet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		//Vamos enviar o header Allow: POST no header map da resposta.
-		//O primeiro parâmetro é o nome do cabeçalho e o segundo é seu valor.
 		w.Header().Set("Allow", http.MethodPost)
-		//Importante: Usar w.Header().Set() depois de w.WriteHeader ou w.Write
-		//não modifica o header que o usuário vai receber. Portanto, qualquer
-		//modificação no header precisa ser informada antes.
-		w.WriteHeader(405)
-		w.Write([]byte("Método não permitido"))
+		//http.Error é um atalho para WriteHead + Write
+		//Nos casos em que queremos especificar algum status diferente de 200.
+		http.Error(w, "Método não permitido", 405)
 		return
 	}
 
