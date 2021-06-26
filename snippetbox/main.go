@@ -30,7 +30,8 @@ func createSnippet(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
+	mux.HandleFunc("/", home) //Lembrete: A rota termina com / então é catch-all
+
 	//Adicionando handlers no servemux
 	mux.HandleFunc("/snippet", showSnippet)
 	mux.HandleFunc("/snippet/create", createSnippet)
