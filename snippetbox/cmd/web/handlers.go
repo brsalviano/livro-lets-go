@@ -14,6 +14,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//O primeiro passo para renderizar um template é analisar os
+	//arquivos de template que serão utilizados.
 	ts, err := template.ParseFiles("./ui/html/home.page.gohtml")
 	if err != nil {
 		log.Println(err.Error())
@@ -21,6 +23,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Se nada deu errado na analise dos templates, podemos renderiza-lo
+	//com o método Execute da instância do Template.
 	err = ts.Execute(w, nil)
 	if err != nil {
 		log.Println(err.Error())
