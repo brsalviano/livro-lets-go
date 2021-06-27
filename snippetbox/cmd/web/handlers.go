@@ -14,17 +14,21 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//O primeiro passo para renderizar um template é analisar os
-	//arquivos de template que serão utilizados.
-	ts, err := template.ParseFiles("./ui/html/home.page.gohtml")
+	//Como vamos precisar usar mais de um arquivo de template
+	//vamos criar um slice especificando cada um deles.
+	files := []string{
+		"./ui/html/home.page.gohtml", //Aqui a ordem importa!
+		"./ui/html/base.layout.gohtml",
+	}
+	//Na hora de passar para a analise de templates
+	//passamos o slice com os templates, lendo-os como variadic .
+	ts, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Erro interno no servidor", 500)
 		return
 	}
 
-	//Se nada deu errado na analise dos templates, podemos renderiza-lo
-	//com o método Execute da instância do Template.
 	err = ts.Execute(w, nil)
 	if err != nil {
 		log.Println(err.Error())
