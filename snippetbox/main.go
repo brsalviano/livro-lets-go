@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -16,14 +18,24 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func showSnippet(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Mostra um snippet específico..."))
+
+	//Estamos extraindo o valor do parâmetro id da query string
+	//e tentando converte-lo em um inteiro através de strconv.Atoi().
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	//Se não puder ser convertido em um inteiro ou se o valor for menor que 1,
+	//vamos retornar uma página de erro 404 na resposta.
+	if err != nil || id < 1 {
+		http.NotFound(w, r)
+		return
+	}
+	//A função Fprintf pode ser usada no lugar de w.Write porque ela pede
+	//que o primeiro parâmetro seja um io.writer e o parâmetro w corresponde a essa interface.
+	fmt.Fprintf(w, "Mostra um snippet específico com o ID %d...", id)
 }
 
 func createSnippet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
-		//http.Error é um atalho para WriteHead + Write
-		//Nos casos em que queremos especificar algum status diferente de 200.
 		http.Error(w, "Método não permitido", 405)
 		return
 	}
