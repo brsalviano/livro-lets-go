@@ -14,14 +14,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Como vamos precisar usar mais de um arquivo de template
-	//vamos criar um slice especificando cada um deles.
 	files := []string{
-		"./ui/html/home.page.gohtml", //Aqui a ordem importa!
+		"./ui/html/home.page.gohtml",
 		"./ui/html/base.layout.gohtml",
+		"./ui/html/footer.partial.gohtml", //Informando o arquivo parcial que contém o novo template usado!
 	}
-	//Na hora de passar para a analise de templates
-	//passamos o slice com os templates, lendo-os como variadic .
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Println(err.Error())
