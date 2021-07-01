@@ -8,9 +8,6 @@ import (
 	"path/filepath"
 )
 
-// Define uma struct application para guardar as dependências da aplicação web.
-// Por enquanto, vamos apenas incluir os campos para dois loggers personalizados,
-// mas vamos adicionar mais conforme progredimos.
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
@@ -24,14 +21,11 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	//Inicia uma nova instância da aplicação contendo as dependências.
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
 	}
 
-	//Aqui, nós atualizamos as declarações das rotas para usar métodos da struct application
-	//para usar como funções handler
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", app.home)
 	mux.HandleFunc("/snippet", app.showSnippet)
