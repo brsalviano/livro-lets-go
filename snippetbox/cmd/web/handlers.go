@@ -17,7 +17,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	files := []string{
 		"./ui/html/home.page.gohtml",
 		"./ui/html/base.layout.gohtml",
-		"./ui/html/footer.partial.gohtml", //Informando o arquivo parcial que contém o novo template usado!
+		"./ui/html/footer.partial.gohtml",
 	}
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
