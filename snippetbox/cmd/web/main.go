@@ -1,24 +1,29 @@
 package main
 
 import (
-	"flag" //novo import
+	"flag"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 )
 
 func main() {
 
-	//Define uma nova flag de linha de comando com o nome 'addr',
-	//com o valor padrão ':4000' e um texto curto explicando o que a flag controla.
-	//O valor da flag será guardado na variável addr em tempo de execução.
 	addr := flag.String("addr", ":4000", "HTTP network address")
 
-	//Importante. Nós usamos flag.Parse para fazer a análise da flag da linha de comando.
-	//flag.Parse faz a leitura do valor da flag da linha de comando e atribui para a variável addr.
-	//É necessário chamar o Parse antes de usar a variável senão sempre vai conter o valor
-	//padrão :4000. Se algum erro for encontrado durante a análise a aplicação será encerrada.
 	flag.Parse()
+
+	//Usa o log.New() para criar um logger para escrever mensagens informativas.
+	//Recebe 3 parâmetros: O destino para escrever os logs (os.Stout), uma string
+	//com a mensagem prefixada com a palavra INFO seguido de tab, e flags para indicar
+	//quais informações adicionais incluir (local date e time). Perceba que as flags são
+	//unidas usando o operador bitwise OR: |
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+
+	//Cria um logger para escrever mensagens de erro da mensma maneira, mas usa Stderr
+	//como destino e usa a flag log.Lshortfile para incluir o nome do arquivo relevante e o número da linha.
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
@@ -29,13 +34,10 @@ func main() {
 
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	// O valor retornado de flag.String() é um ponteiro para o valor da flag, não o valor propriamente dito.
-	// Então nós precisamos desreferenciar o ponteiro antes de usá-lo (por isso o *).
-	log.Printf("Servidor escutando na porta %s", *addr)
-
-	//Agora em vez de passar uma porta fixa, passamos o valor recebido da flag *addr
+	//Escreve as mensagens usando os 2 novos loggers.
+	infoLog.Printf("Servidor escutando na porta %s", *addr)
 	err := http.ListenAndServe(*addr, mux)
-	log.Fatal(err)
+	errorLog.Fatal(err)
 }
 
 type neuteredFileSystem struct {
