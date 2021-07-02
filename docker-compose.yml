@@ -1,0 +1,18 @@
+version: '2.4'
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: lets-go-mysql
+    restart: always
+    volumes:
+      - letsgomysql:/var/lib/mysql
+    ports: 
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: teste
+      TZ: America/Sao_Paulo
+
+volumes:
+  letsgomysql:
+    name: letsgomysql

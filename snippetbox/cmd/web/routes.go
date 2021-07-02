@@ -17,7 +17,6 @@ func (app *application) routes() *http.ServeMux {
 	return mux
 }
 
-// Movi o código do meu sistema de arquivos estáticos para aqui...
 type neuteredFileSystem struct {
 	fs http.FileSystem
 }
