@@ -32,32 +32,15 @@ func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
 
 //Get retorna um snippet específico baseado no id.
 func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
-	// Escreve a declaração SQL que desejamos executar. Novamente, o código
-	// foi feito em duas linhas por questões de legibilidade.
 	stmt := `SELECT id, title, content, created, expires FROM snippets
 	WHERE expires > UTC_TIMESTAMP() AND id = ?`
 
-	// Usa o método QueryRow no pool de conexões para executar a declaração SQL,
-	// passando a variável não confiável id como valor do placeholder.
-	// A declaração retorna um objeto sql.Row que guarda o resultado do banco de dados.
 	row := m.DB.QueryRow(stmt, id)
-
-	//Inicializa um ponteiro para uma nova instância de Snippet
 	s := &models.Snippet{}
 
-	// Usa row.Scan para copiar os valores de cada campo de sql.Row para o campo correspondente
-	// da struct Snippet. Note que os argumentos para row.Scan são ponteiros para colocar o que
-	// os dados que você quer copiar para ele, e o número de argumentos deve ser exatamente o número
-	// de colunas retornadas pela declaração.
 	err := row.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
 	if err != nil {
-		// Se a query não retornar linhas, então row.Scan retorna um erro sql.ErroNoRows.
-		// Estamos usando erros.Is para verificar o erro específico e retornar nosso próprio
-		// erro models.ErrNoRecord em vez disso.
 		if errors.Is(err, sql.ErrNoRows) {
-			// A ideia de ter nosso pŕoprio ErrNoRecord é encapsular completamente o nosso modelo.
-			// Dessa forma, nossa aplicação não se preocupa com erros específicos de um determinado
-			// driver etc.
 			return nil, models.ErrNoRecord
 		}
 
@@ -70,5 +53,56 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 
 //Latest retorna os 10 snippets mais recentes
 func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
-	return nil, nil
+
+	//Escreve a declaração SQL que desejamos executar
+	stmt := `SELECT id, title, content, created, expires FROM snippets
+	WHERE expires > UTC_TIMESTAMP() ORDER BY created DESC LIMIT 10`
+
+	// Usa o método Query no pool de conexões para executar a declaração SQL.
+	// Retorna um sql.Rows que é um resultset contendo os resultados da query.
+	rows, err := m.DB.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	// Aqui vamos garantir que sql.Rows é fechado apropriadamente, depois de todas as instruções.
+	// Esta declaração defer deve vir depois você verificar os erros do método Query.
+	// Se colocarmos antes e o método Query retornar um erro, vamos receber um panic por estarmos tentando
+	// encerrar uma conexão de um resultset nil.
+	defer rows.Close()
+
+	//Inicializa um slice vazio para guardar objetos models.Snippets.
+	snippets := []*models.Snippet{}
+
+	// Usa rows.Next para iterar pelas linhas do resultset.
+	// Prepara a primeira (e então subsequente) linhas para ser atuado pelo método
+	// rows.Scan(). Se a iteração por todas as linhas terminar, então o resultset é
+	// automaticamente encerrado e liberado da conexão do banco de dados.
+	for rows.Next() {
+		//Cria um ponteiro para uma struct Snippet zerada.
+		s := &models.Snippet{}
+
+		// Usa rows.Scan() para copiar os valores de cada campo da linha para
+		// o novo objeto Snippet que criamos. Novamente, os argumentos para row.Scan()
+		// devem ser pointeiros para os locais que desejamos copiar os dados, e o número
+		// de argumentos deve ser exatamente igual ao número  de colunas retornadas da declaração
+		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+		if err != nil {
+			return nil, err
+		}
+
+		// Acrescenta o Snippet recém criado e configurado com os dados da linha atual no slice de Snippets
+		snippets = append(snippets, s)
+	}
+
+	// Quando o loop rows.Next é concluído nós chamamos rows.Err() para obter qualquer erro encontrado durante
+	// a iteração. É importante chamar isso - Não assuma que a iteração bem-sucedida foi completada por todo
+	// o resultset.
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	//Se tudo ocorreu bem, vamos retornar o slice de Snippets
+	return snippets, nil
+
 }

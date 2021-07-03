@@ -1,13 +1,12 @@
 package main
 
 import (
-	"errors" //Novo import
+	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
-	"github.com/brsalviano/livro-lets-go/snippetbox/pkg/models" //Novo import
+	"github.com/brsalviano/livro-lets-go/snippetbox/pkg/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -16,21 +15,18 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files := []string{
-		"./ui/html/home.page.gohtml",
-		"./ui/html/base.layout.gohtml",
-		"./ui/html/footer.partial.gohtml",
-	}
-	ts, err := template.ParseFiles(files...)
+	// Aqui estamos usando o método Latest para obter os snippets mais recentes
+	s, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	err = ts.Execute(w, nil)
-	if err != nil {
-		app.serverError(w, err)
+	// Iterando sobre os snippets
+	for _, snippet := range s {
+		fmt.Fprintf(w, "%v\n", snippet)
 	}
+
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
@@ -41,8 +37,6 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Usa o método Get do SnippetModel para obter os dados especificos de um registro
-	// baseado no ID. Se nenhum registro for encontrado, retorna uma resposta 404.
 	s, err := app.snippets.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
