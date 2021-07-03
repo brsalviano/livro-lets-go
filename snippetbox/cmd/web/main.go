@@ -7,12 +7,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/brsalviano/livro-lets-go/snippetbox/pkg/models/mysql" //Novo import
+	"github.com/brsalviano/livro-lets-go/snippetbox/pkg/models/mysql"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-//Adicionamos o campo snippets para a struct da aplicação.
-//Isso torna o objeto SnippetModel disponível em nossos handlers.
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
@@ -36,11 +34,10 @@ func main() {
 
 	defer db.Close()
 
-	//Inicializa uma instância mysql.SnippetModel e adiciona nas dependências da aplicação.
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
-		snippets: &mysql.SnippetModel{DB: db}, //Injetando o pool de conexões no SnippetModel
+		snippets: &mysql.SnippetModel{DB: db},
 	}
 
 	srv := &http.Server{
