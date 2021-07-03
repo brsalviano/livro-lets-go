@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors" //Novo import
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"github.com/brsalviano/livro-lets-go/snippetbox/pkg/models" //Novo import
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -31,13 +34,28 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
+
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
 	}
 
-	fmt.Fprintf(w, "Mostra um snippet específico com o ID %d...", id)
+	// Usa o método Get do SnippetModel para obter os dados especificos de um registro
+	// baseado no ID. Se nenhum registro for encontrado, retorna uma resposta 404.
+	s, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	// Escreve os dados do snippet como um plain-text no corpo da resposta.
+	fmt.Fprintf(w, "%v", s)
+
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
