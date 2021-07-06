@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -15,14 +16,12 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Aqui estamos usando o método Latest para obter os snippets mais recentes
 	s, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	// Iterando sobre os snippets
 	for _, snippet := range s {
 		fmt.Fprintf(w, "%v\n", snippet)
 	}
@@ -37,7 +36,9 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Pega o dado do model
 	s, err := app.snippets.Get(id)
+
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			app.notFound(w)
@@ -47,8 +48,23 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Escreve os dados do snippet como um plain-text no corpo da resposta.
-	fmt.Fprintf(w, "%v", s)
+	files := []string{
+		"./ui/html/show.page.gohtml",
+		"./ui/html/base.layout.gohtml",
+		"./ui/html/footer.partial.gohtml",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	//Passa o dado como segundo parâmetro na execução do template.
+	err = ts.Execute(w, s)
+	if err != nil {
+		app.serverError(w, err)
+	}
 
 }
 
@@ -59,20 +75,16 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Cria algumas variáveis para guardar dados de exemplo.
-	// Em breve vamos remover isso.
 	title := "O snail"
 	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n- Kobayashi Issa"
 	expires := "7"
 
-	//Passa os dados para o método SnippetModel.Insert e recebe o id do novo registro de volta
 	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	//Redireciona o usuario para a página específica do snippet
 	http.Redirect(w, r, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther)
 
 }
