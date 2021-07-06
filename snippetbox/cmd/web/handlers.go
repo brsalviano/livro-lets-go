@@ -36,7 +36,6 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Pega o dado do model
 	s, err := app.snippets.Get(id)
 
 	if err != nil {
@@ -47,6 +46,10 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	//Criando uma instância de templateData que vai encapsular os dados
+	//passados para o template
+	data := &templateData{Snippet: s}
 
 	files := []string{
 		"./ui/html/show.page.gohtml",
@@ -60,8 +63,8 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Passa o dado como segundo parâmetro na execução do template.
-	err = ts.Execute(w, s)
+	//Passo os dados para o template
+	err = ts.Execute(w, data)
 	if err != nil {
 		app.serverError(w, err)
 	}
